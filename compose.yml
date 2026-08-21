@@ -1,0 +1,109 @@
+name: sistema-pedidos
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Definir POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Definir POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD}
+    expose:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - database
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: ${DATABASE_URL:?Definir DATABASE_URL}
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA:-public}
+      JWT_SECRET: ${JWT_SECRET:?Definir JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS:?Definir CORS_ORIGINS}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
+    expose:
+      - "3000"
+    ports:
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${BACKEND_HOST_PORT:-3101}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    networks:
+      - application
+      - database
+
+  prisma-tools:
+    profiles:
+      - tools
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Definir DATABASE_URL}
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA:-public}
+    ports:
+      - "127.0.0.1:${PRISMA_STUDIO_HOST_PORT:-5555}:5555"
+    volumes:
+      - ./backend/prisma:/app/prisma
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - database
+    command: ["sh", "-c", "echo 'Ejecutar esta utilidad con docker compose run --rm prisma-tools ...'"]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:?Definir NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      API_URL: http://backend:3000/api
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
+    expose:
+      - "3001"
+    ports:
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_HOST_PORT:-3100}:3001"
+    depends_on:
+      backend:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    networks:
+      - application
+
+volumes:
+  postgres_data:
+
+networks:
+  application:
+  database:
+    internal: true
