@@ -84,7 +84,7 @@ La raíz es el único repositorio Git y contiene `compose.yml`, `backend/` y `fr
 2. Seleccioná el repositorio raíz y usá `./compose.yml` como Compose Path.
 3. Activá **Isolated Deployments** para que Dokploy agregue la red de Traefik sin mezclar las redes internas.
 4. Cargá en Environment las variables de `.env.example` con valores de producción.
-5. Conservá `APP_BIND_ADDRESS=127.0.0.1`; los puertos host quedan disponibles solo desde el propio VPS.
+5. No agregues variables de binding de IP; el Compose usa únicamente los puertos host `3100` y `3101`.
 6. En Domains agregá el dominio web al servicio `frontend`, Container Port `3001`, HTTPS habilitado.
 7. Opcionalmente agregá un dominio API al servicio `backend`, Container Port `3000`. No agregues un dominio a `postgres`.
 
@@ -106,7 +106,7 @@ Dokploy escribe las variables de su UI en `.env`, pero no las inyecta automátic
 
 ### Puertos del VPS
 
-El Compose usa los puertos host libres `3100` y `3101`, ligados exclusivamente a `127.0.0.1`. Dokploy y Traefik alcanzan `expose: 3001` y, opcionalmente, `expose: 3000` por la red Docker. PostgreSQL no se publica. Esto evita conflictos con los puertos ya ocupados (`3000`, `3001`, `3002`, `3003`, `3010`, `8080`, etc.).
+El Compose usa los puertos host libres `3100` y `3101`. Dokploy y Traefik alcanzan `expose: 3001` y, opcionalmente, `expose: 3000` por la red Docker. PostgreSQL no se publica. Esto evita conflictos con los puertos ya ocupados (`3000`, `3001`, `3002`, `3003`, `3010`, `8080`, etc.).
 
 ### Operación
 

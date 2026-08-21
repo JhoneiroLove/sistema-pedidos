@@ -97,7 +97,6 @@ Usá el primer resultado como `JWT_SECRET`. Usá el segundo como `NEXT_SERVER_AC
 | `CORS_ORIGINS` | Orígenes web admitidos | `http://localhost:3100` |
 | `ENABLE_SWAGGER` | Habilita Swagger | `true` para desarrollo |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Cifrado estable de Server Actions | Resultado aleatorio de 32 bytes |
-| `APP_BIND_ADDRESS` | Dirección de publicación local | `127.0.0.1` |
 | `FRONTEND_HOST_PORT` | Puerto web local | `3100` |
 | `BACKEND_HOST_PORT` | Puerto API local | `3101` |
 | `PRISMA_STUDIO_HOST_PORT` | Puerto opcional de Prisma Studio | `5555` |
@@ -419,7 +418,7 @@ docker compose up -d --build --wait frontend
 - No subas `.env` ni secretos al repositorio.
 - No uses claves de desarrollo en Dokploy.
 - No publiques PostgreSQL al host.
-- Mantené `APP_BIND_ADDRESS=127.0.0.1` salvo que exista una necesidad local concreta.
+- Los puertos host `3100` y `3101` se usan para acceso local o diagnóstico; el tráfico público de Dokploy debe entrar por Traefik.
 - No uses variables `NEXT_PUBLIC_*` para `API_URL`, JWT o credenciales.
 - Rotá `JWT_SECRET` de manera planificada: hacerlo invalida sesiones existentes.
 - Mantené estable `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` entre builds e instancias.

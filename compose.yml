@@ -37,7 +37,7 @@ services:
     expose:
       - "3000"
     ports:
-      - "${APP_BIND_ADDRESS:-127.0.0.1}:${BACKEND_HOST_PORT:-3101}:3000"
+      - "${BACKEND_HOST_PORT:-3101}:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,7 +62,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:?Definir DATABASE_URL}
       DATABASE_SCHEMA: ${DATABASE_SCHEMA:-public}
     ports:
-      - "127.0.0.1:${PRISMA_STUDIO_HOST_PORT:-5555}:5555"
+      - "${PRISMA_STUDIO_HOST_PORT:-5555}:5555"
     volumes:
       - ./backend/prisma:/app/prisma
     depends_on:
@@ -87,7 +87,7 @@ services:
     expose:
       - "3001"
     ports:
-      - "${APP_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_HOST_PORT:-3100}:3001"
+      - "${FRONTEND_HOST_PORT:-3100}:3001"
     depends_on:
       backend:
         condition: service_healthy
