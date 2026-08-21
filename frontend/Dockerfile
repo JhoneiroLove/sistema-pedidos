@@ -3,7 +3,7 @@
 FROM node:22-alpine AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN --mount=type=cache,id=sistema-pedidos-frontend-npm,sharing=locked,target=/root/.npm npm ci
 
 FROM dependencies AS builder
 ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY

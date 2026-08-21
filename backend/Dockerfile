@@ -3,7 +3,7 @@
 FROM node:22-alpine AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN --mount=type=cache,id=sistema-pedidos-backend-npm,sharing=locked,target=/root/.npm npm ci
 
 FROM dependencies AS builder
 COPY prisma ./prisma
@@ -18,7 +18,7 @@ ENV NODE_ENV=production \
 WORKDIR /app
 RUN apk add --no-cache dumb-init openssl
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev && npm cache clean --force
+RUN --mount=type=cache,id=sistema-pedidos-backend-npm,sharing=locked,target=/root/.npm npm ci --omit=dev && npm cache clean --force
 COPY --from=builder --chown=node:node /app/dist ./dist
 COPY --from=builder --chown=node:node /app/prisma ./prisma
 COPY --from=builder --chown=node:node /app/prisma.config.ts ./prisma.config.ts
