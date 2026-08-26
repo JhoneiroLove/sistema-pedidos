@@ -402,7 +402,7 @@ docker compose logs --tail=200 backend
 docker compose logs --tail=200 frontend
 ```
 
-El frontend usa internamente `API_URL=http://backend:3000/api`. Ese valor no debe cambiarse a `localhost` dentro de Compose.
+El frontend usa internamente `API_URL=http://sistema-pedidos-api:3000/api`. Ese valor no debe cambiarse a `localhost` dentro de Compose. El nombre es intencionalmente único para evitar colisiones DNS con otros proyectos desplegados en `dokploy-network`.
 
 ### Cambios de código no aparecen
 

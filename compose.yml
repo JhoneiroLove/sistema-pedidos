@@ -21,7 +21,7 @@ services:
     networks:
       - database
 
-  backend:
+  sistema-pedidos-api:
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -82,14 +82,14 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3001"
-      API_URL: http://backend:3000/api
+      API_URL: http://sistema-pedidos-api:3000/api
       NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
     expose:
       - "3001"
     ports:
       - "${FRONTEND_HOST_PORT:-3100}:3001"
     depends_on:
-      backend:
+      sistema-pedidos-api:
         condition: service_healthy
     security_opt:
       - no-new-privileges:true

@@ -3,7 +3,7 @@
 ## Arquitectura
 
 ```text
-Navegador -> frontend:3001 -> backend:3000 -> postgres:5432
+Navegador -> frontend:3001 -> sistema-pedidos-api:3000 -> postgres:5432
                    BFF / SSR       Prisma
 ```
 

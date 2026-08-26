@@ -12,7 +12,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-El frontend escucha en `http://localhost:3001`; el backend debe escuchar en `http://localhost:3000`.
+El frontend escucha en `http://localhost:3001`; la API debe escuchar en `http://localhost:3101` cuando se usa el Compose raíz.
 
 `API_URL` es privada y solo puede ser leída por la capa DAL. No debe llevar el prefijo `NEXT_PUBLIC_`. En despliegues con varias instancias también debe configurarse `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` con el mismo valor seguro en todas ellas.
 
