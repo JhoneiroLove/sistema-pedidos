@@ -118,6 +118,14 @@ export function OrderEditor({
         <div className="line-list">
           {lines.map((line, index) => {
             const article = articulos.find((item) => item.id === line.articuloId);
+            const lineArticles = articulos.filter(
+              (item) =>
+                item.id === line.articuloId ||
+                !lines.some(
+                  (otherLine, otherIndex) =>
+                    otherIndex !== index && otherLine.articuloId === item.id,
+                ),
+            );
             const amount =
               Number(article?.precioUnitario ?? 0) *
               line.cantidad *
@@ -127,7 +135,22 @@ export function OrderEditor({
                 <div className="line-product">
                   <span className="line-index">{String(index + 1).padStart(2, "0")}</span>
                   <div>
-                    <strong>{article?.nombre ?? "Artículo no disponible"}</strong>
+                    <label className="sr-only" htmlFor={`articulo-${index}`}>
+                      Artículo de la línea {index + 1}
+                    </label>
+                    <select
+                      id={`articulo-${index}`}
+                      value={line.articuloId}
+                      onChange={(event) =>
+                        updateLine(index, { articuloId: Number(event.target.value) })
+                      }
+                    >
+                      {lineArticles.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.nombre}
+                        </option>
+                      ))}
+                    </select>
                     <span>{article?.codigo} · Stock {article?.stock ?? 0}</span>
                   </div>
                 </div>
