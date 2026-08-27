@@ -60,18 +60,27 @@ const transitionSchema = z.object({
 export async function transitionOrderAction(
   id: number,
   transition: "confirmar" | "entregar" | "cancelar",
-): Promise<void> {
-  const parsed = transitionSchema.parse({ id, transition });
-  await apiRequest(`/pedidos/${parsed.id}/${parsed.transition}`, {
-    method: "PATCH",
-  });
-  revalidatePath("/pedidos");
-  revalidatePath(`/pedidos/${parsed.id}`);
+): Promise<FormState> {
+  try {
+    const parsed = transitionSchema.parse({ id, transition });
+    await apiRequest(`/pedidos/${parsed.id}/${parsed.transition}`, {
+      method: "PATCH",
+    });
+    revalidatePath("/pedidos");
+    revalidatePath(`/pedidos/${parsed.id}`);
+    return {};
+  } catch (error) {
+    return errorToFormState(error);
+  }
 }
 
-export async function deleteOrderAction(id: number): Promise<void> {
-  const orderId = z.number().int().positive().parse(id);
-  await apiRequest(`/pedidos/${orderId}`, { method: "DELETE" });
-  revalidatePath("/pedidos");
-  redirect("/pedidos");
+export async function deleteOrderAction(id: number): Promise<FormState> {
+  try {
+    const orderId = z.number().int().positive().parse(id);
+    await apiRequest(`/pedidos/${orderId}`, { method: "DELETE" });
+    revalidatePath("/pedidos");
+    return {};
+  } catch (error) {
+    return errorToFormState(error);
+  }
 }

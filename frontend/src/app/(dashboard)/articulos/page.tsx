@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { deleteArticuloAction } from "@/features/articulos/actions";
 import { ArticuloForm } from "@/features/articulos/components/articulo-form";
 import { getArticulos } from "@/features/articulos/service";
-import { SubmitButton } from "@/shared/components/submit-button";
+import { ActionButton } from "@/shared/components/action-button";
 import { formatCurrency } from "@/shared/lib/formatters";
 
 export const metadata: Metadata = { title: "Artículos" };
@@ -46,11 +46,13 @@ export default async function ArticulosPage() {
                 Stock<strong className={articulo.stock < 5 ? "low-stock" : ""}>{articulo.stock}</strong>
               </span>
             </div>
-            <form action={deleteArticuloAction.bind(null, articulo.id)}>
-              <SubmitButton className="text-button danger" pendingLabel="Eliminando…">
-                Eliminar del catálogo
-              </SubmitButton>
-            </form>
+            <ActionButton
+              action={deleteArticuloAction.bind(null, articulo.id)}
+              className="text-button danger"
+              pendingLabel="Eliminando…"
+            >
+              Eliminar del catálogo
+            </ActionButton>
           </article>
         ))}
         {articulos.length === 0 && (

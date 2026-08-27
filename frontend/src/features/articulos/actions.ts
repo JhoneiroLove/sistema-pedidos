@@ -34,8 +34,13 @@ export async function createArticuloAction(
   }
 }
 
-export async function deleteArticuloAction(id: number): Promise<void> {
-  const articuloId = z.number().int().positive().parse(id);
-  await apiRequest(`/articulos/${articuloId}`, { method: "DELETE" });
-  revalidatePath("/articulos");
+export async function deleteArticuloAction(id: number): Promise<FormState> {
+  try {
+    const articuloId = z.number().int().positive().parse(id);
+    await apiRequest(`/articulos/${articuloId}`, { method: "DELETE" });
+    revalidatePath("/articulos");
+    return {};
+  } catch (error) {
+    return errorToFormState(error);
+  }
 }

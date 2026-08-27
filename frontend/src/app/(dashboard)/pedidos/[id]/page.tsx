@@ -10,8 +10,8 @@ import {
 } from "@/features/pedidos/actions";
 import { OrderEditor } from "@/features/pedidos/components/order-editor";
 import { StatusBadge } from "@/features/pedidos/components/status-badge";
+import { ActionButton } from "@/shared/components/action-button";
 import { getPedido } from "@/features/pedidos/service";
-import { SubmitButton } from "@/shared/components/submit-button";
 import { ApiError } from "@/shared/lib/api-client";
 import { calculateOrderTotal, formatCurrency, formatDate } from "@/shared/lib/formatters";
 
@@ -52,26 +52,31 @@ export default async function PedidoDetailPage({
         <div className="order-actions">
           {pedido.estado === "BORRADOR" && (
             <>
-              <form action={transitionOrderAction.bind(null, pedido.id, "confirmar")}>
-                <SubmitButton pendingLabel="Confirmando…">Confirmar</SubmitButton>
-              </form>
-              <form action={deleteOrderAction.bind(null, pedido.id)}>
-                <SubmitButton className="button danger" pendingLabel="Eliminando…">
-                  Eliminar
-                </SubmitButton>
-              </form>
+              <ActionButton action={transitionOrderAction.bind(null, pedido.id, "confirmar")} pendingLabel="Confirmando…">
+                Confirmar
+              </ActionButton>
+              <ActionButton
+                action={deleteOrderAction.bind(null, pedido.id)}
+                className="button danger"
+                pendingLabel="Eliminando…"
+                redirectTo="/pedidos"
+              >
+                Eliminar
+              </ActionButton>
             </>
           )}
           {pedido.estado === "CONFIRMADO" && (
             <>
-              <form action={transitionOrderAction.bind(null, pedido.id, "entregar")}>
-                <SubmitButton pendingLabel="Entregando…">Marcar entregado</SubmitButton>
-              </form>
-              <form action={transitionOrderAction.bind(null, pedido.id, "cancelar")}>
-                <SubmitButton className="button danger" pendingLabel="Cancelando…">
-                  Cancelar
-                </SubmitButton>
-              </form>
+              <ActionButton action={transitionOrderAction.bind(null, pedido.id, "entregar")} pendingLabel="Entregando…">
+                Marcar entregado
+              </ActionButton>
+              <ActionButton
+                action={transitionOrderAction.bind(null, pedido.id, "cancelar")}
+                className="button danger"
+                pendingLabel="Cancelando…"
+              >
+                Cancelar
+              </ActionButton>
             </>
           )}
         </div>
