@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { ApiError, apiRequest, SESSION_COOKIE } from "@/shared/lib/api-client";
+import { apiRequest, SESSION_COOKIE } from "@/shared/lib/api-client";
 import type { FormState } from "@/shared/lib/form-state";
 import { errorToFormState } from "@/shared/lib/form-state";
 import type { Cliente } from "@/shared/types/domain";
@@ -97,8 +97,8 @@ export async function logoutAction(): Promise<void> {
   const cookieStore = await cookies();
   try {
     await apiRequest("/auth/logout", { method: "POST" });
-  } catch (error) {
-    if (!(error instanceof ApiError) || error.status !== 401) throw error;
+  } catch {
+    // La sesión local debe cerrarse aunque la API no esté disponible.
   } finally {
     cookieStore.delete(SESSION_COOKIE);
   }
