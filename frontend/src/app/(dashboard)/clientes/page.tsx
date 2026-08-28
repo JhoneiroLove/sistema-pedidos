@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { deleteClienteAction } from "@/features/clientes/actions";
 import { ClienteForm } from "@/features/clientes/components/cliente-form";
 import { getClientes } from "@/features/clientes/service";
-import { SubmitButton } from "@/shared/components/submit-button";
+import { ActionButton } from "@/shared/components/action-button";
 
 export const metadata: Metadata = { title: "Clientes" };
 
@@ -48,14 +48,13 @@ export default async function ClientesPage() {
                   </td>
                   <td data-label="Email">{cliente.email ?? "Sin acceso asociado"}</td>
                   <td className="action-cell">
-                    <form action={deleteClienteAction.bind(null, cliente.id)}>
-                      <SubmitButton
-                        className="text-button danger"
-                        pendingLabel="Eliminando…"
-                      >
-                        Eliminar
-                      </SubmitButton>
-                    </form>
+                    <ActionButton
+                      action={deleteClienteAction.bind(null, cliente.id)}
+                      className="text-button danger"
+                      pendingLabel="Eliminando…"
+                    >
+                      Eliminar
+                    </ActionButton>
                   </td>
                 </tr>
               ))}

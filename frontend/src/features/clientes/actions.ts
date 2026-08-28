@@ -31,8 +31,13 @@ export async function createClienteAction(
   }
 }
 
-export async function deleteClienteAction(id: number): Promise<void> {
-  const clienteId = z.number().int().positive().parse(id);
-  await apiRequest(`/clientes/${clienteId}`, { method: "DELETE" });
-  revalidatePath("/clientes");
+export async function deleteClienteAction(id: number): Promise<FormState> {
+  try {
+    const clienteId = z.number().int().positive().parse(id);
+    await apiRequest(`/clientes/${clienteId}`, { method: "DELETE" });
+    revalidatePath("/clientes");
+    return {};
+  } catch (error) {
+    return errorToFormState(error);
+  }
 }
