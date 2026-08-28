@@ -65,19 +65,22 @@ export class ClientesService {
   async eliminar(id: number) {
     await this.verificarExistencia(id);
 
-    const pedidos = await this.prisma.pedido.findMany({
-      where: { clienteId: id },
-      select: { estado: true },
+    const pedidoPendiente = await this.prisma.pedido.findFirst({
+      where: {
+        clienteId: id,
+        estado: { in: [EstadoPedido.BORRADOR, EstadoPedido.CONFIRMADO] },
+      },
+      select: { id: true },
     });
-    if (pedidos.some((pedido) => pedido.estado !== EstadoPedido.CANCELADO)) {
+    if (pedidoPendiente) {
       throw new ConflictException(
-        'No se puede eliminar el cliente porque tiene pedidos sin cancelar.',
+        'No se puede eliminar el cliente porque tiene pedidos pendientes de entrega.',
       );
     }
 
     return this.prisma.$transaction(async (tx) => {
       await tx.pedido.deleteMany({
-        where: { clienteId: id, estado: EstadoPedido.CANCELADO },
+        where: { clienteId: id },
       });
       return tx.cliente.delete({
         where: { id },

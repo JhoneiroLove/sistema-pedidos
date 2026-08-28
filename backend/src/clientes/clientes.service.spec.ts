@@ -18,12 +18,14 @@ describe('ClientesService', () => {
         delete: mock(),
       },
       pedido: {
-        findMany: mock(),
+        findFirst: mock(),
         deleteMany: mock(),
       },
       $transaction: mock(),
     };
-    prisma.$transaction = jest.fn(async (callback) => callback(prisma));
+    prisma.$transaction = jest.fn((callback) =>
+      Promise.resolve(callback(prisma)),
+    );
     return {
       prisma,
       service: new ClientesService(prisma as unknown as PrismaService),
@@ -50,29 +52,33 @@ describe('ClientesService', () => {
     );
   });
 
-  it('rechaza eliminar si existe un pedido sin cancelar', async () => {
+  it('rechaza eliminar si existe un pedido pendiente de entrega', async () => {
     const { prisma, service } = setup();
     prisma.cliente.findUnique.mockResolvedValue({ id: 1 });
-    prisma.pedido.findMany.mockResolvedValue([{ estado: EstadoPedido.ENTREGADO }]);
+    prisma.pedido.findFirst.mockResolvedValue({ id: 10 });
 
     await expect(service.eliminar(1)).rejects.toBeInstanceOf(ConflictException);
+    expect(prisma.pedido.findFirst).toHaveBeenCalledWith({
+      where: {
+        clienteId: 1,
+        estado: { in: [EstadoPedido.BORRADOR, EstadoPedido.CONFIRMADO] },
+      },
+      select: { id: true },
+    });
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
-  it('elimina pedidos cancelados antes de eliminar al cliente', async () => {
+  it('elimina pedidos cancelados y entregados antes de eliminar al cliente', async () => {
     const { prisma, service } = setup();
     prisma.cliente.findUnique.mockResolvedValue({ id: 1 });
-    prisma.pedido.findMany.mockResolvedValue([
-      { estado: EstadoPedido.CANCELADO },
-      { estado: EstadoPedido.CANCELADO },
-    ]);
+    prisma.pedido.findFirst.mockResolvedValue(null);
     prisma.pedido.deleteMany.mockResolvedValue({ count: 2 });
     prisma.cliente.delete.mockResolvedValue({ id: 1, nombre: 'Acme' });
 
     await service.eliminar(1);
 
     expect(prisma.pedido.deleteMany).toHaveBeenCalledWith({
-      where: { clienteId: 1, estado: EstadoPedido.CANCELADO },
+      where: { clienteId: 1 },
     });
     expect(prisma.cliente.delete).toHaveBeenCalled();
   });
