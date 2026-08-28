@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service.js';
-import { Prisma } from '../generated/prisma/client.js';
+import { EstadoPedido } from '../generated/prisma/client.js';
 import { CreateClienteDto } from './dto/create-cliente.dto.js';
 import { UpdateClienteDto } from './dto/update-cliente.dto.js';
 import { clientePublicSelect } from './cliente.select.js';
@@ -65,22 +65,25 @@ export class ClientesService {
   async eliminar(id: number) {
     await this.verificarExistencia(id);
 
-    try {
-      return await this.prisma.cliente.delete({
+    const pedidos = await this.prisma.pedido.findMany({
+      where: { clienteId: id },
+      select: { estado: true },
+    });
+    if (pedidos.some((pedido) => pedido.estado !== EstadoPedido.CANCELADO)) {
+      throw new ConflictException(
+        'No se puede eliminar el cliente porque tiene pedidos sin cancelar.',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.pedido.deleteMany({
+        where: { clienteId: id, estado: EstadoPedido.CANCELADO },
+      });
+      return tx.cliente.delete({
         where: { id },
         select: clientePublicSelect,
       });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2003'
-      ) {
-        throw new ConflictException(
-          'No se puede eliminar el cliente porque tiene pedidos registrados.',
-        );
-      }
-      throw error;
-    }
+    });
   }
 
   private async verificarExistencia(id: number) {

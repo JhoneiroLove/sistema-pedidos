@@ -214,6 +214,17 @@ tbody tr { transition: background .15s ease; }
 tbody tr:hover { background: rgb(231 225 212 / 38%); }
 .record-id { display: block; margin-top: .32rem; color: #8d8477; font-size: .61rem; }
 .action-cell { width: 100px; text-align: right; }
+.action-cell > div { display: grid; justify-items: end; gap: .45rem; }
+.action-cell .form-message.error {
+  width: min(260px, 100%);
+  margin: 0;
+  padding: .6rem .7rem;
+  border: 1px solid rgb(165 50 45 / 28%);
+  border-left: 3px solid var(--danger);
+  background: rgb(165 50 45 / 7%);
+  text-align: left;
+  line-height: 1.35;
+}
 .money-cell { color: var(--ink); font-family: var(--font-mono); font-weight: 500; }
 .empty-row { padding: 2rem; text-align: center; color: var(--ink-soft); }
 

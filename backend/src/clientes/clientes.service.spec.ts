@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { jest } from '@jest/globals';
 
-import { Prisma } from '../generated/prisma/client.js';
+import { EstadoPedido } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ClientesService } from './clientes.service.js';
 
@@ -17,7 +17,13 @@ describe('ClientesService', () => {
         update: mock(),
         delete: mock(),
       },
+      pedido: {
+        findMany: mock(),
+        deleteMany: mock(),
+      },
+      $transaction: mock(),
     };
+    prisma.$transaction = jest.fn(async (callback) => callback(prisma));
     return {
       prisma,
       service: new ClientesService(prisma as unknown as PrismaService),
@@ -44,16 +50,30 @@ describe('ClientesService', () => {
     );
   });
 
-  it('mapea la relación de pedidos como conflicto al eliminar', async () => {
+  it('rechaza eliminar si existe un pedido sin cancelar', async () => {
     const { prisma, service } = setup();
     prisma.cliente.findUnique.mockResolvedValue({ id: 1 });
-    prisma.cliente.delete.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError('foreign key', {
-        code: 'P2003',
-        clientVersion: '7.9.1',
-      }),
-    );
+    prisma.pedido.findMany.mockResolvedValue([{ estado: EstadoPedido.ENTREGADO }]);
 
     await expect(service.eliminar(1)).rejects.toBeInstanceOf(ConflictException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('elimina pedidos cancelados antes de eliminar al cliente', async () => {
+    const { prisma, service } = setup();
+    prisma.cliente.findUnique.mockResolvedValue({ id: 1 });
+    prisma.pedido.findMany.mockResolvedValue([
+      { estado: EstadoPedido.CANCELADO },
+      { estado: EstadoPedido.CANCELADO },
+    ]);
+    prisma.pedido.deleteMany.mockResolvedValue({ count: 2 });
+    prisma.cliente.delete.mockResolvedValue({ id: 1, nombre: 'Acme' });
+
+    await service.eliminar(1);
+
+    expect(prisma.pedido.deleteMany).toHaveBeenCalledWith({
+      where: { clienteId: 1, estado: EstadoPedido.CANCELADO },
+    });
+    expect(prisma.cliente.delete).toHaveBeenCalled();
   });
 });
